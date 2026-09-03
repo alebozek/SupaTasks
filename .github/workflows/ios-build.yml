@@ -2,41 +2,60 @@ name: iOS-ipa-build
 
 on:
   push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-ios:
     name: iOS Build
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.24.0'   # pin this — 'stable' silently changes over time
           architecture: x64
+          cache: true
+
       - run: flutter pub get
-      
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
       - run: pod repo update
         working-directory: ios
 
       - run: flutter build ios --release --no-codesign
 
-      - run: mkdir Payload
+      - name: Package IPA
         working-directory: build/ios/iphoneos
+        run: |
+          mkdir Payload
+          mv Runner.app Payload
+          zip -qq -r -9 ${{ github.event.repository.name }}.ipa Payload
 
-      - run: mv Runner.app/ Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Zip output
-        run: zip -qq -r -9 ${{ github.event.repository.name }}.ipa Payload
-        working-directory: build/ios/iphoneos
+      - name: Set release tag
+        id: vars
+        run: echo "tag=build-$(date +'%Y%m%d')-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/ios/iphoneos/${{ github.event.repository.name }}.ipa
-          tag: v1.0
+          tag: ${{ steps.vars.outputs.tag }}
           overwrite: true
-          body: "This is my release"
+          body: "Automated build from commit ${{ github.sha }}"
