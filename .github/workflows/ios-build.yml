@@ -21,7 +21,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.24.0'   # pin this — 'stable' silently changes over time
+          flutter-version: '3.9.2'   # pin this — 'stable' silently changes over time
           architecture: x64
           cache: true
 
