@@ -36,7 +36,7 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFF1B1E25),
-      hintStyle: const TextStyle(color: Colors.white38),
+      hintStyle: const TextStyle(color: Colors.black54),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: Colors.white12),

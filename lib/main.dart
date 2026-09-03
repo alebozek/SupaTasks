@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:notes_app/themes/app_theme.dart';
 import 'package:notes_app/widgets/theme-picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -158,12 +159,17 @@ class _MyHomePageState extends State<MyHomePage> {
                     autofocus: true,
                     minLines: 2,
                     maxLines: 5,
+                    style: const TextStyle(color: Colors.black87),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[\r\n]')),
+                    ],
                     textInputAction: TextInputAction.send,
                     onFieldSubmitted: (value) async {
                       await addTask(value);
                     },
                     decoration: InputDecoration(
                       hintText: 'What do you want to get done?',
+                      hintStyle: TextStyle(color: Colors.black54),
                       filled: true,
                       fillColor: Colors.grey.shade100,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
